@@ -230,12 +230,12 @@ namespace SandBoxUI
 
                                 parameters.Add(paramobj);
 
-                                if (methodname == "") throw new Exception("Please select a method checkbox");
 
                             }
                             methodname = (string)((bool)((CheckBox)childmethod.Header).IsChecked ? ((CheckBox)childmethod.Header).Content : "");
                             assemblyname = childassembly.Header.ToString();
                             classname = childclass.Header.ToString();
+                            if (methodname == "") throw new Exception("Please select a method checkbox");
                             goto methodready;
                         }
                     }
