@@ -88,6 +88,7 @@ namespace SandBoxCore
                 assemblyDTO.Classes.Add(classDTO);
                 classDTO.Methods = new List<MethodEntity>();
 
+
                 foreach (var methoditem in classitem.GetMethods())
                 {
                     if (!(helper.IsMethodInBuilt(methoditem))) continue;
