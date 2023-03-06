@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -86,7 +87,7 @@ namespace SandBoxUI
                                     CheckBox methoditem = new CheckBox();
                                     methoditem.Name = methodinclass.FullName;
                                     methoditem.Content = methodinclass.FullName;
-                                    //cb.Click += "";
+                                    methoditem.Click += Method_Checkbox_Click_Event_Handler;
                                     TreeViewItem methodtree = new TreeViewItem();
                                     methodtree.Header = methoditem;
                                     classItem.Items.Add(methodtree);
@@ -146,7 +147,7 @@ namespace SandBoxUI
 
         }
 
-        private void Checkbox_Click_Event_Handler(object sender, RoutedEventArgs e)
+        private void Method_Checkbox_Click_Event_Handler(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -160,7 +161,7 @@ namespace SandBoxUI
                             CheckBox methodcheckbox = childmethod.Header as CheckBox;
 
                             CheckBox clickedcheckbox = sender as CheckBox;
-                            //if (methodcheckbox != sender && (bool)(clickedcheckbox.IsChecked)) clickedcheckbox.Checked = false;
+                            if (methodcheckbox != clickedcheckbox && (bool)(methodcheckbox.IsChecked)) methodcheckbox.IsChecked = false;
                             foreach (var childparam in childmethod.Items.OfType<WrapPanel>())
                             {
                             }
@@ -196,6 +197,7 @@ namespace SandBoxUI
                 string classname = "";
                 string methodname = "";
                 List<InvokeParameterInterface> parameters = new List<InvokeParameterInterface>();
+                //bool foundmethod = false;
 
                 foreach (var childassembly in innerstack.Children.OfType<TreeViewItem>())
                 {
@@ -203,6 +205,7 @@ namespace SandBoxUI
                     {
                         foreach (var childmethod in childclass.Items.OfType<TreeViewItem>())
                         {
+                            if (!(bool)((CheckBox)childmethod.Header).IsChecked) continue;
                             foreach (var childparam in childmethod.Items.OfType<WrapPanel>())
                             {
                                 var childparamwrap = childparam as WrapPanel;
@@ -220,20 +223,26 @@ namespace SandBoxUI
 
                                 if (textcontent != null)
                                 {
+                                    if (textcontent.Text.ToString() == "") throw new Exception("Please input a value for "
+                                                                            + paramobj.ParameterName);
                                     paramobj.ParameterValue = textcontent.Text.ToString();
                                 }
 
-                                assemblyname = childassembly.Header.ToString();
-                                classname = childclass.Header.ToString();
-                                methodname = (string)((bool)((CheckBox)childmethod.Header).IsChecked ? ((CheckBox)childmethod.Header).Content : "");
                                 parameters.Add(paramobj);
 
                                 if (methodname == "") throw new Exception("Please select a method checkbox");
+
                             }
+                            methodname = (string)((bool)((CheckBox)childmethod.Header).IsChecked ? ((CheckBox)childmethod.Header).Content : "");
+                            assemblyname = childassembly.Header.ToString();
+                            classname = childclass.Header.ToString();
+                            goto methodready;
                         }
                     }
                 }
 
+            methodready:
+                if (methodname == "") throw new Exception("No method in the class");
                 Object[] objparams = helper.ObjectParameters(parameters);
                 sandboxer.SetupSandBox(permissionboxes, filepath, assemblyname, classname, methodname, objparams);
 
