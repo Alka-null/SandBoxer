@@ -8,8 +8,8 @@
         Title="MainWindow" Height="2000" Width="800">
     <Grid x:Name ="mygrid" Background="Coral" RenderTransformOrigin="0.481,0.492">
         <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="170"></RowDefinition>
+            <RowDefinition Height="400"></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
@@ -21,14 +21,14 @@
                     <Setter Property="Padding" Value="10,10" />
                 </Style>
             </StackPanel.Resources>-->
-            <Button Name="btnOpenFile" Height="50" Width="500" Click="btnOpenFiles_Click" Margin="20,20,20,20">Open files</Button>
+            <Button Name="btnOpenFile" Height="50" Width="500" Click="btnOpenFiles_Click" Margin="20,20,20,20">Open file</Button>
             <ListBox Name="lbFiles" Height="50" Width="500" Background="PaleTurquoise" Margin="20,20,20,20"/>
         </StackPanel>
 
         <!--<ScrollViewer HorizontalAlignment="Left" Background="Green" Height="2000" Margin="10,10,0,0"  Width="188" VerticalScrollBarVisibility="Auto">-->
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1" Margin="10,10,10,10">
-            <StackPanel Name="innerstack" Background="Olive" >
+            <StackPanel Name="innerstack" Background="Olive" Height="599" >
                 <Label>Select the assembly to execute</Label>
             </StackPanel>
         </ScrollViewer>
@@ -50,7 +50,7 @@
         </StackPanel >
 
         <StackPanel Grid.Row="3">
-            <Button HorizontalAlignment="Center" Background="LawnGreen" Click="Execute_Button_Click">Execute files</Button>
+            <Button HorizontalAlignment="Center" Background="LawnGreen" Click="Execute_Button_Click">Execute Method</Button>
         </StackPanel>
     </Grid>
 </Window>

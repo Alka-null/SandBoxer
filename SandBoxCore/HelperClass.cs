@@ -83,6 +83,76 @@ namespace SandBoxCore
 
             return objparams;
         }
+
+
+        public Type[] TypeParameters(List<InvokeParameterInterface> invokeparams)
+        {
+            Type[] objparams = new Type[invokeparams.Count];
+            int i = 0;
+            foreach (var item in invokeparams)
+            {
+                switch (item.ParameterName)
+                {
+                    case "Int16":
+                        objparams[i] = typeof(System.Int16);
+                        i++;
+                        break;
+                    case "Int32":
+                        objparams[i] = typeof(System.Int32);
+                i++;
+                        break;
+                    case "Int64":
+                        objparams[i] = typeof(System.Int64);
+                i++;
+                        break;
+                    case "UInt16":
+                        objparams[i] = typeof(System.UInt16);
+                        i++;
+                        break;
+                    case "UInt32":
+                        objparams[i] = typeof(System.UInt32); 
+                        i++;
+                        break;
+                    case "UInt64":
+                        objparams[i] = typeof(System.UInt64);
+                        i++;
+                        break;
+                    case "Single":
+                        objparams[i] = typeof(System.Single);
+                        i++;
+                        break;
+                    case "Decimal":
+                        objparams[i] = typeof(System.Decimal);
+                        i++;
+                        break;
+                    case "Double":
+                        objparams[i] = typeof(System.Double);
+                        i++;
+                        break;
+                    case "Boolean":
+                        objparams[i] = typeof(System.Boolean);
+                        i++;
+                        break;
+                    case "String":
+                        objparams[i] = typeof(System.String);
+                        i++;
+                        break;
+                    case "Char":
+                        objparams[i] = typeof(System.Char);
+                        i++;
+                        break;
+                    case "DateTime":
+                        objparams[i] = typeof(System.DateTime);
+                        i++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return objparams;
+        }
+
         public bool IsMethodInBuilt(MethodInfo method)
         {
             if (method.DeclaringType.Namespace.StartsWith("System")) return false;

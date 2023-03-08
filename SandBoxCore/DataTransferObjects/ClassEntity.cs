@@ -15,6 +15,7 @@ namespace SandBoxCore.DataTransferObjects
         private string shortname;
 
         public List<MethodEntity> Methods { get; set; }
+        public List<MethodEntity> Constructors { get; set; }
         public string FullName { get => fullname; set => fullname=value; }
         public string ShortName { get => shortname; set => shortname = value; }
     }

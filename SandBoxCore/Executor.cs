@@ -16,6 +16,7 @@ using SandBoxCore.Interfaces;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Globalization;
 
 [assembly: AssemblyKeyFileAttribute("mysandboxapp.snk")]
 namespace SandBoxCore
@@ -87,7 +88,30 @@ namespace SandBoxCore
                 };
                 assemblyDTO.Classes.Add(classDTO);
                 classDTO.Methods = new List<MethodEntity>();
+                classDTO.Constructors = new List<MethodEntity>();
 
+                foreach (var constructoritem in classitem.GetConstructors())
+                {
+                    //if (!(helper.IsMethodInBuilt(constructoritem))) continue;
+                    if (!(helper.IsMethodAllowed(constructoritem.GetParameters().ToList()))) continue;
+                    var constructorDTO = new MethodEntity()
+                    {
+                        FullName = constructoritem.DeclaringType.Name,
+                        ShortName = constructoritem.DeclaringType.Name
+                    };
+                    classDTO.Constructors.Add(constructorDTO);
+                    constructorDTO.Parameters = new List<ParameterEntity>();
+
+                    foreach (var parameteritem in constructoritem.GetParameters())
+                    {
+                        var parameterDTO = new ParameterEntity()
+                        {
+                            FullName = parameteritem.ParameterType.Name,
+                            ShortName = parameteritem.Name
+                        };
+                        constructorDTO.Parameters.Add(parameterDTO);
+                    }
+                }
 
                 foreach (var methoditem in classitem.GetMethods())
                 {
@@ -123,7 +147,7 @@ namespace SandBoxCore
         }
 
 
-        public void SetupSandBox(List<string> permissionboxes, string filepath, string assemblyName, string typeName, string entryPoint, Object[] parameters)
+        public void SetupSandBox(List<string> permissionboxes, string filepath, string assemblyName, string typeName, string entryPoint, Object[] parameters, Type[] constructorparameters, Object[] ctorarguments)
         {
             string sandboxedassemblyname = Path.GetFileNameWithoutExtension(filepath);
             string sandboxedassemblydirectory = Path.GetDirectoryName(filepath);
@@ -169,16 +193,23 @@ namespace SandBoxCore
             //Unwrap the new domain instance into a reference in this domain and use it to execute the
             //untrusted code.
             Sandboxer newDomainInstance = (Sandboxer)handle.Unwrap();
-            newDomainInstance.ExecuteUntrustedCodeBasic(sandboxedassemblyname, typeName, entryPoint, parameters);
+            newDomainInstance.ExecuteUntrustedCodeBasic(sandboxedassemblyname, typeName, entryPoint, parameters, constructorparameters, ctorarguments);
         }
-        public void ExecuteUntrustedCodeBasic(string assemblyName, string typeName, string entryPoint, Object[] parameters)
+        public void ExecuteUntrustedCodeBasic(string assemblyName, string typeName, string entryPoint, Object[] parameters, Type[] ctorparameters, Object[] ctorarguments)
         {
-            MethodInfo target = Assembly.Load(assemblyName).GetType(typeName).GetMethod(entryPoint);
+            //MethodInfo target = Assembly.Load(assemblyName).GetType(typeName).GetMethod(entryPoint);
             try
             {
+                Type testType = Assembly.Load(assemblyName).GetType(typeName);
+
+                ConstructorInfo ctor = testType.GetConstructor(ctorparameters);
+                object instance = ctor.Invoke(ctorarguments);
+                MethodInfo target = testType.GetMethod(entryPoint);
+
                 //Now invoke the method.
                 //bool retVal = (bool)target.Invoke(null, objparam);
-                var retVal = target.Invoke(null, parameters);
+                var retVal = target.Invoke(instance, parameters);
+
             }
             catch (Exception error)
             {

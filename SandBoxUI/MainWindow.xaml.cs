@@ -78,9 +78,64 @@ namespace SandBoxUI
                                 //UIElementCollection collectionHeadandbody = new UIElementCollection();
                                 ParentItem.Items.Add(classItem);
 
+                                StackPanel methodsstack = new StackPanel();
+                                //methodsstack.Name = "methodscontainer";
+
                                 Label methodlabel = new Label();
                                 methodlabel.Content = "Methods";
-                                classItem.Items.Add(methodlabel);
+
+                                methodsstack.Children.Add(methodlabel);
+
+                                StackPanel constructorstack= new StackPanel();
+                                //constructorstack.Name= "constructorscontainer";
+
+                                Label constructorlabel = new Label();
+                                constructorlabel.Content = "Constructors";
+
+                                constructorstack.Children.Add (constructorlabel);
+                                classItem.Items.Add(constructorstack);
+                                classItem.Items.Add(methodsstack);
+
+
+                                //get the constructors
+                                foreach (var constructorsofclass in classinassembly.Constructors)
+                                {
+                                    CheckBox constructoritem = new CheckBox();
+                                    constructoritem.Name = constructorsofclass.FullName;
+                                    constructoritem.Content = constructorsofclass.FullName;
+                                    //constructoritem.Click += Method_Checkbox_Click_Event_Handler;
+                                    TreeViewItem constructortree = new TreeViewItem();
+                                    constructortree.Header = constructoritem;
+                                    constructorstack.Children.Add(constructortree);
+                                    //classItem.Items.Add(constructorstack);
+
+                                    Label parameterlabel = new Label();
+                                    parameterlabel.Content = "Parameters";
+                                    constructortree.Items.Add(parameterlabel);
+
+                                    foreach (var param in constructorsofclass.Parameters)
+                                    {
+                                        Label paramlabel = new Label();
+                                        paramlabel.Content = param.ShortName;
+
+                                        Label paramtype = new Label();
+                                        paramtype.Content = param.FullName;
+
+                                        TextBox paramtextbox = new TextBox()
+                                        {
+                                            Width = 50
+                                        };
+
+                                        WrapPanel paramcontainer = new WrapPanel();
+                                        paramcontainer.Children.Add(paramtype);
+                                        paramcontainer.Children.Add(paramlabel);
+                                        paramcontainer.Children.Add(paramtextbox);
+
+                                        constructortree.Items.Add(paramcontainer);
+
+                                    }
+                                }
+
 
                                 foreach (var methodinclass in classinassembly.Methods)
                                 {
@@ -90,7 +145,8 @@ namespace SandBoxUI
                                     methoditem.Click += Method_Checkbox_Click_Event_Handler;
                                     TreeViewItem methodtree = new TreeViewItem();
                                     methodtree.Header = methoditem;
-                                    classItem.Items.Add(methodtree);
+                                    methodsstack.Children.Add(methodtree);
+                                    //classItem.Items.Add(methodsstack);
 
                                     Label parameterlabel = new Label();
                                     parameterlabel.Content = "Parameters";
@@ -156,7 +212,9 @@ namespace SandBoxUI
                 {
                     foreach (var childclass in childassembly.Items.OfType<TreeViewItem>())
                     {
-                        foreach (var childmethod in childclass.Items.OfType<TreeViewItem>())
+                        StackPanel methodsstack = childclass.Items.OfType<StackPanel>().ToList()[1];
+                                        //Where(x => x.Name == "methodsstack").FirstOrDefault();
+                        foreach (var childmethod in methodsstack.Children.OfType<TreeViewItem>())
                         {
                             CheckBox methodcheckbox = childmethod.Header as CheckBox;
 
@@ -196,6 +254,7 @@ namespace SandBoxUI
                 string assemblyname = "";
                 string classname = "";
                 string methodname = "";
+                List<InvokeParameterInterface> constructorparameters = new List<InvokeParameterInterface>();
                 List<InvokeParameterInterface> parameters = new List<InvokeParameterInterface>();
                 //bool foundmethod = false;
 
@@ -203,9 +262,55 @@ namespace SandBoxUI
                 {
                     foreach (var childclass in childassembly.Items.OfType<TreeViewItem>())
                     {
-                        foreach (var childmethod in childclass.Items.OfType<TreeViewItem>())
+                        StackPanel methodsstack = childclass.Items.OfType<StackPanel>().ToList()[1];
+                                                    //Where(x => x.Name == "methodsstack").FirstOrDefault();
+                        foreach (var childmethod in methodsstack.Children.OfType<TreeViewItem>())
                         {
                             if (!(bool)((CheckBox)childmethod.Header).IsChecked) continue;
+                            StackPanel constructorsstack = childclass.Items.OfType<StackPanel>().ToList()[0];
+                            foreach (var constructormethod in constructorsstack.Children.OfType<TreeViewItem>())
+                            {
+                                if (!(bool)((CheckBox)constructormethod.Header).IsChecked) continue;
+                                foreach (var childparam in constructormethod.Items.OfType<WrapPanel>())
+                                {
+                                    var childparamwrap = childparam as WrapPanel;
+                                    InvokeParameterInterface paramobj = new InvokeParameter();
+
+                                    Label paramtype = childparamwrap.Children[0] as Label;
+                                    Label paramlabel = childparamwrap.Children[1] as Label;
+                                    TextBox textcontent = childparamwrap.Children[2] as TextBox;
+
+
+                                    if (paramtype != null)
+                                    {
+                                        paramobj.ParameterName = paramtype.Content.ToString();
+                                    }
+
+                                    if (textcontent != null)
+                                    {
+                                        if (textcontent.Text.ToString() == "") throw new Exception("Please input a value for "
+                                                                                + paramobj.ParameterName);
+                                        paramobj.ParameterValue = textcontent.Text.ToString();
+                                    }
+
+                                    constructorparameters.Add(paramobj);
+
+
+                                }
+                                if (constructormethod.Items.OfType<WrapPanel>().Count()-1 > constructorparameters.Count)
+                                    throw new Exception("You have to input all parameters for constructor");
+                            }
+                            
+                            if(constructorsstack.Children.OfType<TreeViewItem>().Count() == 1 
+                                && 
+                                constructorsstack.Children.OfType<TreeViewItem>().ToList()[0].Items.OfType<WrapPanel>().Count() == 0)
+                            {
+
+                            }
+                            else if (constructorsstack.Children.OfType<TreeViewItem>().Count() > 0 && constructorparameters.Count == 0){
+                                throw new Exception("You have to select a constructor");
+                            }
+
                             foreach (var childparam in childmethod.Items.OfType<WrapPanel>())
                             {
                                 var childparamwrap = childparam as WrapPanel;
@@ -244,12 +349,19 @@ namespace SandBoxUI
             methodready:
                 if (methodname == "") throw new Exception("No method in the class");
                 Object[] objparams = helper.ObjectParameters(parameters);
-                sandboxer.SetupSandBox(permissionboxes, filepath, assemblyname, classname, methodname, objparams);
+                Type[] constructorobjparams = helper.TypeParameters(constructorparameters);
+                Object[] ctorarguments = helper.ObjectParameters(constructorparameters);
+                sandboxer.SetupSandBox(permissionboxes, filepath, assemblyname, classname, methodname, objparams, constructorobjparams, ctorarguments);
 
-                //var execheckbox = innerstack.Children.OfType<CheckBox>().Where(x => x.IsChecked == true).FirstOrDefault();
-                //var execheckboxname = execheckbox.Content;
-                //Console.WriteLine(" execheckboxname");
-                //Console.WriteLine(execheckboxname);
+                string messageBoxText = "The program successfully executed in the sandbox" ;
+
+                string caption = "Success";
+                MessageBoxButton button = MessageBoxButton.OK;
+                MessageBoxImage icon = MessageBoxImage.None;
+                MessageBoxResult result;
+
+                result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+
             }
             catch (Exception error )
             {
